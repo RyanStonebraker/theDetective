@@ -17,9 +17,11 @@ class TextGenerator():
         self.rCharacters = {}
         self.switchKeyVal(self.cLoader.characters)
 
-    def buildModel(self, lstmNodes):
+    def buildModel(self):
         self.model = Sequential()
-        self.model.add(LSTM(lstmNodes, input_shape=(self.trainingIn.shape[1], self.trainingIn.shape[2])))
+        self.model.add(LSTM(256, input_shape=(self.trainingIn.shape[1], self.trainingIn.shape[2]), return_sequences=True))
+        self.model.add(Dropout(0.2))
+        self.model.add(LSTM(256))
         self.model.add(Dropout(0.2))
         self.model.add(Dense(self.trainingOut.shape[1], activation='softmax'))
         self.model.compile(loss='categorical_crossentropy', optimizer='adam')
@@ -28,8 +30,8 @@ class TextGenerator():
         for key, value in characterMapping.items():
             self.rCharacters[value] = key
 
-    def trainModel(self, epochs, lstmNodes, batchSize):
-        self.buildModel(lstmNodes)
+    def trainModel(self, epochs, batchSize):
+        self.buildModel()
         progressFile = self.trainingFolder + "/weight-{epoch:02d}-{loss:.4f}.hdf5"
         progress = ModelCheckpoint(progressFile, monitor='loss', verbose=1, save_best_only=True, mode='min')
         progressCallback = [progress]
@@ -76,7 +78,7 @@ if __name__ == "__main__":
     cLoader.printStats()
 
     textGen = TextGenerator(cLoader)
-    textGen.trainModel(epochs=5, lstmNodes=256, batchSize=128)
+    textGen.trainModel(epochs=5, batchSize=64)
 
     print("Model Generated!")
 
