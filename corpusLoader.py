@@ -8,6 +8,7 @@ class CorpusLoader:
         self.corpusLoc = corpusLoc
         self.rawText = ""
         self.characters = set()
+        self.uniqueCharacters = 0
         self.inputLength = inputLength
         self.inputs = []
         self.outputs = []
@@ -34,7 +35,9 @@ class CorpusLoader:
             self.outputs.append(trainingY)
 
     def shapeData(self):
-        self.shapedX = numpy.reshape(self.inputs, (len(self.inputs), self.inputLength, 1)) / float(len(self.characters))
+        if not self.uniqueCharacters:
+            self.uniqueCharacters = len(self.characters)
+        self.shapedX = numpy.reshape(self.inputs, (len(self.inputs), self.inputLength, 1)) / float(self.uniqueCharacters)
         self.shapedY = utils.to_categorical(self.outputs)
 
     def writeDataset(self, datasetName=None):
@@ -44,27 +47,37 @@ class CorpusLoader:
         if not os.path.isdir(trainingFolder):
             os.mkdir(trainingFolder)
         with open("training/{}/train.txt".format(datasetName), "w") as trainingWriter:
-            trainingWriter.write(str(self.inputLength) + "\n")
+            trainingWriter.write("{0},{1}".format(self.inputLength, len(self.characters)) + "\n")
             for i in range(len(self.inputs)):
-                trainingWriter.write("{0}:::{1}\n".format(self.inputs[i], self.outputs[i]))
+                trainingWriter.write("{0}:{1}\n".format(self.inputs[i], self.outputs[i]))
 
     def loadDataset(self, datasetName):
         with open("training/{}/train.txt".format(datasetName), "r") as trainingReader:
             firstLine = True
             for line in trainingReader.readlines():
                 if firstLine:
-                    self.inputLength = int(line)
+                    header = line.split(",")
+                    self.inputLength = int(header[0])
+                    self.uniqueCharacters = int(header[1])
                     firstLine = False
                     continue
-                inOut = line.split(":::")
+                inOut = line.split(":")
                 self.inputs.append(ast.literal_eval(inOut[0]))
                 self.outputs.append(int(inOut[1]))
+        print("Dataset Loaded")
 
+    def printStats(self):
+        print("Input Length:", self.inputLength)
+        print("Corpus Character Count:", len(self.rawText))
+        print("Unique Character Count:", len(self.characters))
+        print("Patterns:", len(self.inputs))
+        print("Unique Patterns:", len(set(tuple(i) for i in self.inputs)))
 
 if __name__ == "__main__":
-    cLoader = CorpusLoader("corpora/studyinscarlet.txt", 50)
-    cLoader.createTrainingDataset()
-    cLoader.writeDataset()
-    # cLoader = CorpusLoader()
-    # cLoader.loadDataset("sherlockholmes")
-    # cLoader.shapeData()
+    # cLoader = CorpusLoader("corpora/studyinscarlet.txt", 50)
+    # cLoader.createTrainingDataset()
+    # cLoader.printStats()
+    # cLoader.writeDataset()
+    cLoader = CorpusLoader()
+    cLoader.loadDataset("studyinscarlet")
+    cLoader.shapeData()
