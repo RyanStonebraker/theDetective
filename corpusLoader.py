@@ -6,6 +6,7 @@ from tensorflow.keras import utils
 class CorpusLoader:
     def __init__(self, corpusLoc=None, inputLength=100):
         self.corpusLoc = corpusLoc
+        self.trainingFolder = "training/{}".format(self.corpusLoc[self.corpusLoc.rfind("/") + 1:self.corpusLoc.rfind(".")])
         self.rawText = ""
         self.characters = set()
         self.uniqueCharacters = 0
@@ -26,7 +27,6 @@ class CorpusLoader:
     def createTrainingDataset(self):
         if not self.rawText:
             return
-
         for i in range(len(self.rawText) - self.inputLength):
             trainingX = self.rawText[i:i + self.inputLength]
             trainingX = [self.characters[character] for character in trainingX]
@@ -41,11 +41,10 @@ class CorpusLoader:
         self.shapedY = utils.to_categorical(self.outputs)
 
     def writeDataset(self, datasetName=None):
-        if datasetName is None:
-            datasetName = self.corpusLoc[self.corpusLoc.rfind("/") + 1:self.corpusLoc.rfind(".")]
-        trainingFolder = "training/{}".format(datasetName)
-        if not os.path.isdir(trainingFolder):
-            os.mkdir(trainingFolder)
+        if datasetName is not None:
+            self.trainingFolder = "training/{}".format(datasetName)
+        if not os.path.isdir(self.trainingFolder):
+            os.mkdir(self.trainingFolder)
         with open("training/{}/train.txt".format(datasetName), "w") as trainingWriter:
             trainingWriter.write("{0},{1}".format(self.inputLength, len(self.characters)) + "\n")
             for i in range(len(self.inputs)):
