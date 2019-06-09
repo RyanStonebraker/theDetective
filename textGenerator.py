@@ -1,0 +1,71 @@
+from corpusLoader import CorpusLoader
+
+import numpy
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dropout
+from tensorflow.keras.layers import LSTM
+from tensorflow.keras.callbacks import ModelCheckpoint
+
+class TextGenerator():
+    def __init__(self, trainingFolder, cLoader):
+        self.cLoader = cLoader
+        self.model = None
+        self.trainingFolder = trainingFolder
+        self.trainingIn = self.cLoader.shapedX
+        self.trainingOut = self.cLoader.shapedY
+        self.rCharacters = {}
+        self.switchKeyVal(self.cLoader.characters)
+        self.buildModel()
+
+    def buildModel(self):
+        self.model = Sequential()
+        self.model.add(LSTM(256, input_shape=(self.trainingIn.shape[1], self.trainingIn.shape[2])))
+        self.model.add(Dropout(0.2))
+        self.model.add(Dense(self.trainingOut.shape[1], activation='softmax'))
+        self.model.compile(loss='categorical_crossentropy', optimizer='adam')
+
+    def switchKeyVal(self, characterMapping):
+        for key, value in characterMapping.items():
+            self.rCharacters[value] = key
+
+    def trainModel(self, epochs, batchSize):
+        progressFile = self.trainingFolder + "/weight-{epoch:02d}-{loss:.4f}.hdf5"
+        progress = ModelCheckpoint(progressFile, monitor='loss', verbose=1, save_best_only=True, mode='min')
+        progressCallback = [progress]
+
+        self.model.fit(self.trainingIn, self.trainingOut, epochs=epochs, batch_size=batchSize, callbacks=progressCallback)
+
+    def loadModel(self, modelName):
+        self.model.load_weights("{0}/{1}".format(self.trainingFolder, modelName))
+        self.model.compile(loss='categorical_crossentropy', optimizer='adam')
+
+    def generateText(self, charsToGen):
+        seed = numpy.random.randint(0, len(self.cLoader.inputs) - 1)
+        pattern = self.cLoader.inputs[seed]
+        print('\n\nSeed Pattern: """{0}"""'.format("".join([self.rCharacters[val] for val in pattern])))
+
+        for i in range(charsToGen):
+            input = numpy.reshape(pattern, (1, len(pattern), 1))
+            input = input / float(len(self.rCharacters))
+            nextValPrediction = self.model.predict(input, verbose=False)
+            index = numpy.argmax(nextValPrediction)
+            charPrediction = self.rCharacters[index]
+            print(charPrediction, end="")
+            pattern.append(index)
+            pattern = pattern[1:]
+        print("\n")
+
+if __name__ == "__main__":
+    cLoader = CorpusLoader("corpora/studyinscarlet.txt", 100)
+    cLoader.createTrainingDataset()
+    cLoader.shapeData()
+    cLoader.printStats()
+
+    textGen = TextGenerator("training/studyinscarlet", cLoader)
+    textGen.trainModel(5, 128)
+
+    print("Model Generated!")
+
+    textGen.loadModel("current-weight-05-2.7257.hdf5")
+    textGen.generateText(1000)

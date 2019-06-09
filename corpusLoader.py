@@ -4,7 +4,7 @@ import numpy
 from tensorflow.keras import utils
 
 class CorpusLoader:
-    def __init__(self, corpusLoc=None, inputLength=50):
+    def __init__(self, corpusLoc=None, inputLength=100):
         self.corpusLoc = corpusLoc
         self.rawText = ""
         self.characters = set()
@@ -19,7 +19,7 @@ class CorpusLoader:
 
     def readCorpus(self, corpusLoc):
         with open(corpusLoc, "r") as corpusReader:
-            self.rawText = corpusReader.read()
+            self.rawText = corpusReader.read().strip().replace("\n", " ")
             characterSet = sorted(list(set(self.rawText)))
             self.characters = dict((character, index) for index, character in enumerate(characterSet))
 
@@ -74,10 +74,10 @@ class CorpusLoader:
         print("Unique Patterns:", len(set(tuple(i) for i in self.inputs)))
 
 if __name__ == "__main__":
-    # cLoader = CorpusLoader("corpora/studyinscarlet.txt", 50)
-    # cLoader.createTrainingDataset()
-    # cLoader.printStats()
-    # cLoader.writeDataset()
-    cLoader = CorpusLoader()
-    cLoader.loadDataset("studyinscarlet")
-    cLoader.shapeData()
+    cLoader = CorpusLoader("corpora/studyinscarlet.txt", 50)
+    cLoader.createTrainingDataset()
+    cLoader.printStats()
+    cLoader.writeDataset()
+    # cLoader = CorpusLoader()
+    # cLoader.loadDataset("studyinscarlet")
+    # cLoader.shapeData()
