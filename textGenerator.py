@@ -1,5 +1,6 @@
 from corpusLoader import CorpusLoader
 
+import os
 import numpy
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
@@ -53,17 +54,18 @@ class TextGenerator():
             if not bestModel or weight < lowestWeight:
                 bestModel = file
                 lowestWeight = weight
+        print("Loaded Model:", bestModel)
         self.loadModel(bestModel)
 
     def generateText(self, charsToGen):
         seed = numpy.random.randint(0, len(self.cLoader.inputs) - 1)
         pattern = self.cLoader.inputs[seed]
-        print('\n\nSeed Pattern: """{0}"""'.format("".join([self.rCharacters[val] for val in pattern])))
+        print('\n\n{0}'.format("".join([self.rCharacters[val] for val in pattern])), end="")
 
         for i in range(charsToGen):
-            input = numpy.reshape(pattern, (1, len(pattern), 1))
-            input = input / float(len(self.rCharacters))
-            nextValPrediction = self.model.predict(input, verbose=False)
+            x = numpy.reshape(pattern, (1, len(pattern), 1))
+            x = x / float(len(self.rCharacters))
+            nextValPrediction = self.model.predict(x, verbose=False)
             index = numpy.argmax(nextValPrediction)
             charPrediction = self.rCharacters[index]
             print(charPrediction, end="")
@@ -72,13 +74,13 @@ class TextGenerator():
         print("\n")
 
 if __name__ == "__main__":
-    cLoader = CorpusLoader("corpora/studyinscarlet.txt", 100)
+    cLoader = CorpusLoader("corpora/studyinscarlet.txt", 128)
     cLoader.createTrainingDataset()
     cLoader.shapeData()
     cLoader.printStats()
 
     textGen = TextGenerator(cLoader)
-    textGen.trainModel(epochs=5, batchSize=64)
+    # textGen.trainModel(epochs=5, batchSize=64)
 
     print("Model Generated!")
 
