@@ -1,2 +1,2 @@
 # theDetective
-Character-based RNN trained on Sherlock Holmes.
+Character-based RNN/LSTM trained using Sherlock Holmes text.

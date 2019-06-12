@@ -21,11 +21,11 @@ class TextGenerator():
     def buildModel(self):
         self.model = Sequential()
         self.model.add(LSTM(256, input_shape=(self.trainingIn.shape[1], self.trainingIn.shape[2]), return_sequences=True))
-        self.model.add(Dropout(0.2))
+        self.model.add(Dropout(0.4))
         self.model.add(LSTM(256))
-        self.model.add(Dropout(0.2))
-        self.model.add(Dense(self.trainingOut.shape[1], activation='softmax'))
-        self.model.compile(loss='categorical_crossentropy', optimizer='adam')
+        self.model.add(Dropout(0.3))
+        self.model.add(Dense(self.trainingOut.shape[1], activation='sigmoid'))
+        self.model.compile(loss='binary_crossentropy', optimizer='adam')
 
     def switchKeyVal(self, characterMapping):
         for key, value in characterMapping.items():
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     cLoader.printStats()
 
     textGen = TextGenerator(cLoader)
-    # textGen.trainModel(epochs=5, batchSize=64)
+    textGen.trainModel(epochs=1, batchSize=64)
 
     print("Model Generated!")
 
