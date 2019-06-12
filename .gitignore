@@ -2,3 +2,9 @@ training/*/train.txt
 training/*/old
 .DS_Store
 __pycache__
+training/studyinscarlet/weight-06-2.2101.hdf5
+training/studyinscarlet/weight-03-2.4976.hdf5
+training/studyinscarlet/weight-04-2.3687.hdf5
+training/studyinscarlet/weight-05-2.2776.hdf5
+training/studyinscarlet/weight-07-2.1529.hdf5
+training/catinhat/weight-01-3.1770.hdf5

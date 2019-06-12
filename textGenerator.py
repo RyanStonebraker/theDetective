@@ -21,7 +21,7 @@ class TextGenerator():
     def buildModel(self):
         self.model = Sequential()
         self.model.add(LSTM(320, input_shape=(self.trainingIn.shape[1], self.trainingIn.shape[2]), return_sequences=True))
-        self.model.add(Dropout(0.4))
+        self.model.add(Dropout(0.25))
         self.model.add(LSTM(256))
         self.model.add(Dropout(0.3))
         self.model.add(Dense(self.trainingOut.shape[1], activation='softmax'))
@@ -61,7 +61,7 @@ class TextGenerator():
         seed = numpy.random.randint(0, len(self.cLoader.inputs) - 1)
         pattern = self.cLoader.inputs[seed]
         print('\n\n{0}'.format("".join([self.rCharacters[val] for val in pattern])), end="")
-
+        
         for i in range(charsToGen):
             x = numpy.reshape(pattern, (1, len(pattern), 1))
             x = x / float(len(self.rCharacters))
@@ -74,13 +74,13 @@ class TextGenerator():
         print("\n")
 
 if __name__ == "__main__":
-    cLoader = CorpusLoader("corpora/studyinscarlet.txt", 150)
+    cLoader = CorpusLoader("corpora/catinhat.txt", 128)
     cLoader.createTrainingDataset()
     cLoader.shapeData()
     cLoader.printStats()
 
     textGen = TextGenerator(cLoader)
-    textGen.trainModel(epochs=1, batchSize=64)
+    textGen.trainModel(epochs=20, batchSize=64)
 
     print("Model Generated!")
 
