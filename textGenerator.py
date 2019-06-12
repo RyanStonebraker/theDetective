@@ -20,12 +20,12 @@ class TextGenerator():
 
     def buildModel(self):
         self.model = Sequential()
-        self.model.add(LSTM(256, input_shape=(self.trainingIn.shape[1], self.trainingIn.shape[2]), return_sequences=True))
+        self.model.add(LSTM(320, input_shape=(self.trainingIn.shape[1], self.trainingIn.shape[2]), return_sequences=True))
         self.model.add(Dropout(0.4))
         self.model.add(LSTM(256))
         self.model.add(Dropout(0.3))
-        self.model.add(Dense(self.trainingOut.shape[1], activation='sigmoid'))
-        self.model.compile(loss='binary_crossentropy', optimizer='adam')
+        self.model.add(Dense(self.trainingOut.shape[1], activation='softmax'))
+        self.model.compile(loss='categorical_crossentropy', optimizer='adam')
 
     def switchKeyVal(self, characterMapping):
         for key, value in characterMapping.items():
@@ -34,7 +34,7 @@ class TextGenerator():
     def trainModel(self, epochs, batchSize):
         self.buildModel()
         progressFile = self.trainingFolder + "/weight-{epoch:02d}-{loss:.4f}.hdf5"
-        progress = ModelCheckpoint(progressFile, monitor='loss', verbose=1, save_best_only=True, mode='min')
+        progress = ModelCheckpoint(progressFile, monitor='loss', verbose=True, save_best_only=True, mode='min')
         progressCallback = [progress]
 
         self.model.fit(self.trainingIn, self.trainingOut, epochs=epochs, batch_size=batchSize, callbacks=progressCallback)
@@ -74,7 +74,7 @@ class TextGenerator():
         print("\n")
 
 if __name__ == "__main__":
-    cLoader = CorpusLoader("corpora/studyinscarlet.txt", 128)
+    cLoader = CorpusLoader("corpora/studyinscarlet.txt", 150)
     cLoader.createTrainingDataset()
     cLoader.shapeData()
     cLoader.printStats()
