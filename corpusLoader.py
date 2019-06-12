@@ -19,7 +19,7 @@ class CorpusLoader:
             self.readCorpus(corpusLoc)
 
     def readCorpus(self, corpusLoc):
-        with open(corpusLoc, "r") as corpusReader:
+        with open(corpusLoc, "r", encoding="utf8") as corpusReader:
             self.rawText = corpusReader.read().strip().replace("\n", " ")
             characterSet = sorted(list(set(self.rawText)))
             self.characters = dict((character, index) for index, character in enumerate(characterSet))
